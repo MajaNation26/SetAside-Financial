@@ -1,13 +1,18 @@
 {
   "name": "setaside-financial",
   "version": "1.0.0",
-  "description": "A live freelance finance app with tax set-asides, invoicing, reminders and monetization-ready billing.",
+  "description": "Production-ready freelance finance app with tax set-asides, invoicing, reminders, auth and Stripe-ready monetization.",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
-    "dev": "node --watch server.js"
+    "dev": "node --watch server.js",
+    "check": "node --check server.js"
   },
   "dependencies": {
-    "express": "^4.19.2"
+    "bcryptjs": "^2.4.3",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "express-session": "^1.18.0",
+    "stripe": "^16.12.0"
   }
 }

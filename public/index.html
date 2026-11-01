@@ -1,0 +1,344 @@
+require('dotenv').config();
+
+const express = require('express');
+const fs = require('fs');
+const path = require('path');
+const session = require('express-session');
+const bcrypt = require('bcryptjs');
+const Stripe = require('stripe');
+
+const app = express();
+const port = Number(process.env.PORT) || 3000;
+const isProduction = process.env.NODE_ENV === 'production';
+const dataDir = path.join(__dirname, 'data');
+const storePath = path.join(dataDir, 'store.json');
+const usersPath = path.join(dataDir, 'users.json');
+const publicDir = path.join(__dirname, 'public');
+const stripe = process.env.STRIPE_SECRET_KEY ? new Stripe(process.env.STRIPE_SECRET_KEY) : null;
+
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+app.use(
+  session({
+    secret: process.env.SESSION_SECRET || 'setaside-dev-secret-change-me',
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+      httpOnly: true,
+      secure: isProduction,
+      sameSite: 'lax',
+      maxAge: 1000 * 60 * 60 * 24 * 7
+    }
+  })
+);
+app.use(express.static(publicDir));
+
+function ensureDirectory(dirPath) {
+  if (!fs.existsSync(dirPath)) {
+    fs.mkdirSync(dirPath, { recursive: true });
+  }
+}
+
+function readJSON(filePath, fallback) {
+  ensureDirectory(path.dirname(filePath));
+  if (!fs.existsSync(filePath)) {
+    fs.writeFileSync(filePath, JSON.stringify(fallback, null, 2));
+    return fallback;
+  }
+
+  try {
+    return JSON.parse(fs.readFileSync(filePath, 'utf8'));
+  } catch (error) {
+    fs.writeFileSync(filePath, JSON.stringify(fallback, null, 2));
+    return fallback;
+  }
+}
+
+function writeJSON(filePath, data) {
+  ensureDirectory(path.dirname(filePath));
+  fs.writeFileSync(filePath, JSON.stringify(data, null, 2));
+}
+
+function ensureStore() {
+  ensureDirectory(dataDir);
+
+  if (!fs.existsSync(storePath)) {
+    const seed = {
+      summary: {
+        cashOnHand: 18420,
+        taxReserve: 6280,
+        thisMonthRevenue: 9700,
+        upcomingExpenses: 2360,
+        runwayDays: 48,
+        netProfit: 4820
+      },
+      invoices: [
+        { id: 'INV-1042', client: 'Northstar Studio', amount: 2400, due: '2026-11-10', status: 'Paid', type: 'Retainer' },
+        { id: 'INV-1043', client: 'Luma Health', amount: 3600, due: '2026-11-12', status: 'Pending', type: 'Project' },
+        { id: 'INV-1044', client: 'Oak & Pine', amount: 1850, due: '2026-11-15', status: 'Pending', type: 'Consulting' },
+        { id: 'INV-1045', client: 'Brightlane', amount: 2900, due: '2026-11-18', status: 'Draft', type: 'Retainer' }
+      ],
+      reminders: [
+        { id: 'rem-1', title: 'Quarterly tax payment due', due: '2026-11-08', amount: 1800 },
+        { id: 'rem-2', title: 'Client follow-up for INV-1043', due: '2026-11-11', amount: 3600 },
+        { id: 'rem-3', title: 'Stripe invoice reminder', due: '2026-11-14', amount: 1850 }
+      ],
+      cashflow: [
+        { label: 'Jan', income: 4200, expenses: 2100 },
+        { label: 'Feb', income: 5300, expenses: 2600 },
+        { label: 'Mar', income: 6100, expenses: 2800 },
+        { label: 'Apr', income: 7000, expenses: 2900 },
+        { label: 'May', income: 7100, expenses: 3200 },
+        { label: 'Jun', income: 8200, expenses: 3500 }
+      ],
+      plans: [
+        { id: 'starter', name: 'Starter', price: 19, description: 'Built for solo freelancers tracking cash flow and tax reserves.', features: ['Bank sync', 'Tax set-aside', 'Invoice tracking', '2 clients'] },
+        { id: 'pro', name: 'Pro', price: 49, description: 'For growing freelancers with client management and automation.', features: ['Everything in Starter', 'Unlimited clients', 'Smart reminders', 'Advanced reports'], popular: true },
+        { id: 'agency', name: 'Agency', price: 99, description: 'For teams and multi-client businesses scaling operations.', features: ['Everything in Pro', 'Team access', 'Custom invoices', 'Priority onboarding'] }
+      ]
+    };
+
+    writeJSON(storePath, seed);
+  }
+}
+
+function ensureUsers() {
+  ensureDirectory(dataDir);
+
+  if (!fs.existsSync(usersPath)) {
+    const defaultUser = {
+      id: 'user_demo_001',
+      name: 'Demo Freelancer',
+      email: 'demo@setaside.app',
+      passwordHash: bcrypt.hashSync('demo123', 10),
+      createdAt: new Date().toISOString()
+    };
+
+    writeJSON(usersPath, [defaultUser]);
+  }
+}
+
+function readStore() {
+  ensureStore();
+  return readJSON(storePath, { summary: {}, invoices: [], reminders: [], cashflow: [], plans: [] });
+}
+
+function writeStore(data) {
+  writeJSON(storePath, data);
+}
+
+function readUsers() {
+  ensureUsers();
+  return readJSON(usersPath, []);
+}
+
+function writeUsers(users) {
+  writeJSON(usersPath, users);
+}
+
+function sanitizeUser(user) {
+  if (!user) return null;
+  const { passwordHash, ...safeUser } = user;
+  return safeUser;
+}
+
+function getCurrentUser(req) {
+  return req.session?.user || null;
+}
+
+function requireAuth(req, res, next) {
+  if (!getCurrentUser(req)) {
+    return res.status(401).json({ error: 'Authentication required.' });
+  }
+  next();
+}
+
+app.get('/api/config', (req, res) => {
+  res.json({
+    appName: 'SetAside Financial',
+    stripeConfigured: Boolean(stripe),
+    environment: isProduction ? 'production' : 'development'
+  });
+});
+
+app.get('/api/health', (req, res) => {
+  res.json({
+    ok: true,
+    app: 'SetAside Financial',
+    mode: isProduction ? 'production' : 'development',
+    stripeConfigured: Boolean(stripe),
+    timestamp: new Date().toISOString()
+  });
+});
+
+app.post('/api/auth/register', (req, res) => {
+  const { name, email, password } = req.body || {};
+
+  if (!name || !email || !password) {
+    return res.status(400).json({ error: 'Name, email and password are required.' });
+  }
+
+  const users = readUsers();
+  const emailNormalized = String(email).trim().toLowerCase();
+
+  if (users.some((user) => user.email.toLowerCase() === emailNormalized)) {
+    return res.status(409).json({ error: 'An account with that email already exists.' });
+  }
+
+  const user = {
+    id: `user_${Date.now()}`,
+    name: String(name).trim(),
+    email: emailNormalized,
+    passwordHash: bcrypt.hashSync(String(password), 10),
+    createdAt: new Date().toISOString()
+  };
+
+  users.push(user);
+  writeUsers(users);
+
+  req.session.user = sanitizeUser(user);
+  res.status(201).json({ user: req.session.user });
+});
+
+app.post('/api/auth/login', (req, res) => {
+  const { email, password } = req.body || {};
+
+  if (!email || !password) {
+    return res.status(400).json({ error: 'Email and password are required.' });
+  }
+
+  const users = readUsers();
+  const user = users.find((entry) => entry.email.toLowerCase() === String(email).trim().toLowerCase());
+
+  if (!user || !bcrypt.compareSync(String(password), user.passwordHash)) {
+    return res.status(401).json({ error: 'Invalid email or password.' });
+  }
+
+  req.session.user = sanitizeUser(user);
+  res.json({ user: req.session.user });
+});
+
+app.get('/api/auth/me', (req, res) => {
+  const user = getCurrentUser(req);
+  if (!user) {
+    return res.status(401).json({ error: 'Not authenticated.' });
+  }
+  res.json({ user });
+});
+
+app.post('/api/auth/logout', (req, res) => {
+  req.session.destroy(() => {
+    res.json({ ok: true, message: 'Logged out successfully.' });
+  });
+});
+
+app.get('/api/dashboard', requireAuth, (req, res) => {
+  const data = readStore();
+  res.json(data);
+});
+
+app.get('/api/invoices', requireAuth, (req, res) => {
+  const data = readStore();
+  res.json(data.invoices);
+});
+
+app.post('/api/invoices', requireAuth, (req, res) => {
+  const data = readStore();
+  const { client, amount, due, type = 'Consulting' } = req.body || {};
+
+  if (!client || !amount || !due) {
+    return res.status(400).json({ error: 'Client, amount and due date are required.' });
+  }
+
+  const invoice = {
+    id: `INV-${Math.floor(1000 + Math.random() * 9000)}`,
+    client: String(client).trim(),
+    amount: Number(amount),
+    due,
+    status: 'Draft',
+    type: String(type).trim()
+  };
+
+  data.invoices.unshift(invoice);
+  data.summary.thisMonthRevenue = Number(data.summary.thisMonthRevenue || 0) + Number(invoice.amount) * 0.45;
+  writeStore(data);
+
+  res.status(201).json(invoice);
+});
+
+app.get('/api/billing/plans', requireAuth, (req, res) => {
+  const data = readStore();
+  res.json(data.plans);
+});
+
+app.post('/api/billing/checkout', requireAuth, async (req, res) => {
+  const { planId } = req.body || {};
+  const data = readStore();
+  const plan = data.plans.find((item) => item.id === planId) || data.plans[1];
+
+  if (!plan) {
+    return res.status(404).json({ error: 'Pricing plan not found.' });
+  }
+
+  if (!stripe) {
+    const fallback = {
+      id: `cs_demo_${Date.now()}`,
+      mode: 'demo',
+      status: 'created',
+      url: '/#pricing',
+      plan: plan.name,
+      amount: plan.price,
+      user: getCurrentUser(req)?.email || 'freelancer@example.com',
+      message: 'Demo checkout created successfully. Add Stripe keys to activate live payment processing.'
+    };
+
+    return res.status(200).json(fallback);
+  }
+
+  try {
+    const session = await stripe.checkout.sessions.create({
+      mode: 'payment',
+      success_url: `${process.env.APP_URL || 'http://localhost:3000'}?checkout=success`,
+      cancel_url: `${process.env.APP_URL || 'http://localhost:3000'}?checkout=cancelled`,
+      line_items: [
+        {
+          price_data: {
+            currency: 'usd',
+            product_data: {
+              name: plan.name,
+              description: plan.description
+            },
+            unit_amount: Math.round(Number(plan.price) * 100)
+          },
+          quantity: 1
+        }
+      ],
+      customer_email: getCurrentUser(req)?.email || undefined,
+      metadata: {
+        planId: plan.id,
+        userId: getCurrentUser(req)?.id || 'anonymous'
+      }
+    });
+
+    res.status(200).json({
+      id: session.id,
+      status: 'created',
+      mode: 'stripe',
+      url: session.url,
+      plan: plan.name,
+      amount: plan.price,
+      message: 'Stripe checkout session created successfully.'
+    });
+  } catch (error) {
+    res.status(500).json({ error: 'Stripe checkout failed.', details: error.message });
+  }
+});
+
+app.get('*', (req, res) => {
+  res.sendFile(path.join(publicDir, 'index.html'));
+});
+
+app.listen(port, () => {
+  console.log(`SetAside Financial app running on http://localhost:${port}`);
+  console.log(`Stripe configured: ${Boolean(stripe)}`);
+});

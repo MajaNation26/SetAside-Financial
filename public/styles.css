@@ -4,151 +4,199 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>SetAside Financial</title>
-    <meta name="description" content="SetAside Financial helps freelancers manage cash flow, set-aside taxes, invoice clients, and monetize with subscription plans." />
+    <meta name="description" content="SetAside Financial helps freelancers manage taxes, cash flow, invoicing and pricing." />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="styles.css" />
+    <link rel="stylesheet" href="/styles.css" />
   </head>
   <body>
-    <header class="topbar">
-      <div class="container nav">
-        <div class="brand">
+    <div id="authView" class="auth-shell">
+      <div class="auth-card">
+        <div class="brand auth-brand">
           <span class="brand-mark">S</span>
           <span>SetAside</span>
         </div>
-        <nav>
-          <a href="#overview">Overview</a>
-          <a href="#invoices">Invoices</a>
-          <a href="#reminders">Reminders</a>
-          <a href="#pricing">Pricing</a>
-        </nav>
-        <button class="primary-btn">Launch dashboard</button>
+
+        <div class="auth-tabs">
+          <button type="button" class="tab-btn active" data-tab="login">Login</button>
+          <button type="button" class="tab-btn" data-tab="signup">Sign up</button>
+        </div>
+
+        <form id="loginForm" class="auth-form">
+          <label>
+            Email
+            <input type="email" name="email" placeholder="you@example.com" required />
+          </label>
+          <label>
+            Password
+            <input type="password" name="password" placeholder="••••••••" required />
+          </label>
+          <button type="submit" class="primary-btn wide">Log in</button>
+          <p class="demo-note">Demo account: demo@setaside.app / demo123</p>
+        </form>
+
+        <form id="signupForm" class="auth-form hidden">
+          <label>
+            Full name
+            <input type="text" name="name" placeholder="Your name" required />
+          </label>
+          <label>
+            Email
+            <input type="email" name="email" placeholder="you@example.com" required />
+          </label>
+          <label>
+            Password
+            <input type="password" name="password" placeholder="Create a password" required />
+          </label>
+          <button type="submit" class="primary-btn wide">Create account</button>
+        </form>
       </div>
-    </header>
+    </div>
 
-    <main>
-      <section class="hero">
-        <div class="container hero-grid">
-          <div class="hero-copy">
-            <span class="eyebrow">Built for freelancers</span>
-            <h1>Keep your taxes, cash flow, and clients on track.</h1>
-            <p>
-              SetAside Financial helps independent professionals automate tax set-asides, track invoices,
-              and build predictable monthly revenue without spreadsheets or chaos.
-            </p>
-            <div class="cta-row">
-              <button class="primary-btn">Start free trial</button>
-              <button class="secondary-btn">Book demo</button>
+    <div id="dashboardView" class="hidden">
+      <header class="topbar">
+        <div class="container nav">
+          <div class="brand">
+            <span class="brand-mark">S</span>
+            <span>SetAside</span>
+          </div>
+          <nav>
+            <a href="#overview">Overview</a>
+            <a href="#invoices">Invoices</a>
+            <a href="#reminders">Reminders</a>
+            <a href="#pricing">Pricing</a>
+          </nav>
+          <div class="nav-actions">
+            <span id="userBadge" class="user-badge"></span>
+            <button id="logoutBtn" class="secondary-btn">Log out</button>
+          </div>
+        </div>
+      </header>
+
+      <main>
+        <section class="hero">
+          <div class="container hero-grid">
+            <div class="hero-copy">
+              <span class="eyebrow">Built for freelancers</span>
+              <h1>Keep your taxes, cash flow, and clients on track.</h1>
+              <p>
+                SetAside Financial helps independent professionals automate tax set-asides, track invoices,
+                and build predictable monthly revenue without spreadsheets or chaos.
+              </p>
+              <div class="cta-row">
+                <button class="primary-btn">Start free trial</button>
+                <button class="secondary-btn">Book demo</button>
+              </div>
+              <ul class="hero-meta">
+                <li>Bank sync</li>
+                <li>Stripe invoicing</li>
+                <li>Automatic reminders</li>
+              </ul>
             </div>
-            <ul class="hero-meta">
-              <li>Bank sync</li>
-              <li>Stripe invoicing</li>
-              <li>Automatic reminders</li>
-            </ul>
-          </div>
 
-          <div class="hero-card">
-            <div class="mini-card highlight">
-              <span>Cash on hand</span>
-              <strong id="cashOnHand">$18,420</strong>
-            </div>
-            <div class="mini-card">
-              <span>Tax reserve</span>
-              <strong id="taxReserve">$6,280</strong>
-            </div>
-            <div class="mini-card">
-              <span>Outstanding invoices</span>
-              <strong id="openInvoices">$7,850</strong>
+            <div class="hero-card">
+              <div class="mini-card highlight">
+                <span>Cash on hand</span>
+                <strong id="cashOnHand">$18,420</strong>
+              </div>
+              <div class="mini-card">
+                <span>Tax reserve</span>
+                <strong id="taxReserve">$6,280</strong>
+              </div>
+              <div class="mini-card">
+                <span>Outstanding invoices</span>
+                <strong id="openInvoices">$7,850</strong>
+              </div>
             </div>
           </div>
-        </div>
-      </section>
+        </section>
 
-      <section id="overview" class="stats-section">
-        <div class="container stat-grid">
-          <article class="card stat-card">
-            <span>Monthly revenue</span>
-            <strong id="monthlyRevenue">$9,700</strong>
-            <small>+12.8% from last month</small>
-          </article>
-          <article class="card stat-card">
-            <span>Upcoming expenses</span>
-            <strong id="upcomingExpenses">$2,360</strong>
-            <small>14 days runway</small>
-          </article>
-          <article class="card stat-card">
-            <span>Net profit</span>
-            <strong id="netProfit">$4,820</strong>
-            <small>Healthy margin</small>
-          </article>
-          <article class="card stat-card">
-            <span>Runway</span>
-            <strong id="runwayDays">48 days</strong>
-            <small>Based on current burn</small>
-          </article>
-        </div>
-      </section>
-
-      <section class="container dashboard-grid">
-        <div class="card wide-card">
-          <div class="card-header">
-            <h2>Cash flow</h2>
-            <span class="badge success">Positive trend</span>
+        <section id="overview" class="stats-section">
+          <div class="container stat-grid">
+            <article class="card stat-card">
+              <span>Monthly revenue</span>
+              <strong id="monthlyRevenue">$9,700</strong>
+              <small>+12.8% from last month</small>
+            </article>
+            <article class="card stat-card">
+              <span>Upcoming expenses</span>
+              <strong id="upcomingExpenses">$2,360</strong>
+              <small>14 days runway</small>
+            </article>
+            <article class="card stat-card">
+              <span>Net profit</span>
+              <strong id="netProfit">$4,820</strong>
+              <small>Healthy margin</small>
+            </article>
+            <article class="card stat-card">
+              <span>Runway</span>
+              <strong id="runwayDays">48 days</strong>
+              <small>Based on current burn</small>
+            </article>
           </div>
-          <div class="chart" id="cashflowChart"></div>
-        </div>
+        </section>
 
-        <div id="invoices" class="card">
-          <div class="card-header">
-            <h2>Invoices</h2>
-            <button class="small-btn" id="quickInvoiceBtn">+ Add</button>
+        <section class="container dashboard-grid">
+          <div class="card wide-card">
+            <div class="card-header">
+              <h2>Cash flow</h2>
+              <span class="badge success">Positive trend</span>
+            </div>
+            <div class="chart" id="cashflowChart"></div>
           </div>
-          <div id="invoiceList" class="list"></div>
-        </div>
-      </section>
 
-      <section id="reminders" class="container lower-grid">
-        <div class="card">
-          <div class="card-header">
-            <h2>Automatic reminders</h2>
+          <div id="invoices" class="card">
+            <div class="card-header">
+              <h2>Invoices</h2>
+              <button class="small-btn" id="quickInvoiceBtn">+ Add</button>
+            </div>
+            <div id="invoiceList" class="list"></div>
           </div>
-          <div id="reminderList" class="list"></div>
-        </div>
+        </section>
 
-        <div class="card">
-          <div class="card-header">
-            <h2>Quick actions</h2>
+        <section id="reminders" class="container lower-grid">
+          <div class="card">
+            <div class="card-header">
+              <h2>Automatic reminders</h2>
+            </div>
+            <div id="reminderList" class="list"></div>
           </div>
-          <form id="invoiceForm" class="stack-form">
-            <label>
-              Client
-              <input type="text" name="client" placeholder="Acme Studio" required />
-            </label>
-            <label>
-              Amount
-              <input type="number" name="amount" placeholder="2500" required />
-            </label>
-            <label>
-              Due date
-              <input type="date" name="due" required />
-            </label>
-            <button type="submit" class="primary-btn wide">Create invoice</button>
-          </form>
-        </div>
-      </section>
 
-      <section id="pricing" class="pricing-section">
-        <div class="container">
-          <div class="section-title">
-            <span class="eyebrow">Monetization-ready</span>
-            <h2>Simple pricing that scales with your business</h2>
+          <div class="card">
+            <div class="card-header">
+              <h2>Quick actions</h2>
+            </div>
+            <form id="invoiceForm" class="stack-form">
+              <label>
+                Client
+                <input type="text" name="client" placeholder="Acme Studio" required />
+              </label>
+              <label>
+                Amount
+                <input type="number" name="amount" placeholder="2500" required />
+              </label>
+              <label>
+                Due date
+                <input type="date" name="due" required />
+              </label>
+              <button type="submit" class="primary-btn wide">Create invoice</button>
+            </form>
           </div>
-          <div id="pricingGrid" class="pricing-grid"></div>
-        </div>
-      </section>
-    </main>
+        </section>
 
-    <script src="app.js"></script>
+        <section id="pricing" class="pricing-section">
+          <div class="container">
+            <div class="section-title">
+              <span class="eyebrow">Monetization-ready</span>
+              <h2>Simple pricing that scales with your business</h2>
+            </div>
+            <div id="pricingGrid" class="pricing-grid"></div>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <script src="/app.js"></script>
   </body>
 </html>

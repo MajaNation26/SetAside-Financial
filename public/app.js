@@ -1,7 +1,3 @@
-* {
-  box-sizing: border-box;
-}
-
 :root {
   --bg: #f5f7fb;
   --card: #ffffff;
@@ -17,6 +13,10 @@
   --shadow: 0 20px 45px rgba(15, 23, 42, 0.08);
 }
 
+* {
+  box-sizing: border-box;
+}
+
 html {
   scroll-behavior: smooth;
 }
@@ -30,6 +30,14 @@ body {
 
 button, input {
   font: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+.hidden {
+  display: none !important;
 }
 
 .container {
@@ -51,6 +59,7 @@ button, input {
   align-items: center;
   justify-content: space-between;
   min-height: 76px;
+  gap: 16px;
 }
 
 .brand {
@@ -83,9 +92,23 @@ nav a {
   font-weight: 500;
 }
 
-.primary-btn, .secondary-btn, .small-btn {
+.nav-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.user-badge {
+  background: #dbeafe;
+  color: var(--accent-strong);
+  padding: 0.35rem 0.7rem;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.primary-btn, .secondary-btn, .small-btn, .tab-btn {
   border: 0;
-  cursor: pointer;
   transition: transform 0.2s ease, opacity 0.2s ease;
 }
 
@@ -102,7 +125,7 @@ nav a {
   background: transparent;
   color: var(--primary);
   border: 1px solid var(--line);
-  padding: 0.9rem 1.4rem;
+  padding: 0.85rem 1.15rem;
   border-radius: 12px;
   font-weight: 600;
 }
@@ -115,8 +138,89 @@ nav a {
   font-weight: 600;
 }
 
-.primary-btn:hover, .secondary-btn:hover, .small-btn:hover {
+.primary-btn:hover, .secondary-btn:hover, .small-btn:hover, .tab-btn:hover {
   transform: translateY(-1px);
+}
+
+.auth-shell {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  background: linear-gradient(135deg, #eff6ff, #f8fafc 40%, #eef2ff);
+  padding: 24px;
+}
+
+.auth-card {
+  width: min(440px, 100%);
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid rgba(229, 231, 235, 0.9);
+  border-radius: 30px;
+  box-shadow: var(--shadow);
+  padding: 28px 24px;
+  backdrop-filter: blur(12px);
+}
+
+.auth-brand {
+  justify-content: center;
+  margin-bottom: 20px;
+}
+
+.auth-tabs {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+  background: #f3f4f6;
+  border-radius: 14px;
+  padding: 6px;
+  margin-bottom: 18px;
+}
+
+.tab-btn {
+  background: transparent;
+  border-radius: 10px;
+  padding: 0.75rem;
+  font-weight: 700;
+  color: var(--muted);
+}
+
+.tab-btn.active {
+  background: #ffffff;
+  color: var(--primary);
+  box-shadow: 0 6px 20px rgba(15, 23, 42, 0.08);
+}
+
+.auth-form {
+  display: grid;
+  gap: 1rem;
+}
+
+.auth-form label,
+.stack-form label {
+  display: grid;
+  gap: 0.45rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.auth-form input,
+.stack-form input {
+  width: 100%;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: #fff;
+  padding: 0.85rem 0.9rem;
+}
+
+.auth-form .wide,
+.stack-form .wide {
+  width: 100%;
+}
+
+.demo-note {
+  margin: 0;
+  text-align: center;
+  color: var(--muted);
+  font-size: 0.82rem;
 }
 
 .hero {
@@ -361,25 +465,6 @@ nav a {
 .stack-form {
   display: grid;
   gap: 1rem;
-}
-
-.stack-form label {
-  display: grid;
-  gap: 0.45rem;
-  font-weight: 600;
-  color: var(--text);
-}
-
-.stack-form input {
-  width: 100%;
-  border: 1px solid var(--line);
-  border-radius: 12px;
-  background: #fff;
-  padding: 0.8rem 0.9rem;
-}
-
-.wide {
-  width: 100%;
 }
 
 .pricing-section {
