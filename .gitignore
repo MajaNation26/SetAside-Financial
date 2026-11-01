@@ -1,0 +1,73 @@
+# SetAside Financial
+
+SetAside Financial is a freelancer-first finance app built to help independent professionals:
+
+- Track cash flow and runway
+- Auto-calculate tax set-asides
+- Manage invoices and reminders
+- Monetize through subscription plans
+- Deliver a polished live dashboard experience
+
+This repository now includes a working local web app with a Node.js backend and a responsive frontend.
+
+## Features
+
+- Live dashboard with key financial KPIs
+- Invoice management and quick invoice creation
+- Automatic reminder list
+- Pricing and checkout-ready billing flow
+- Demo-mode Stripe-ready API endpoint for monetization
+- Persistent JSON-backed storage for demo data
+
+## Tech stack
+
+- Node.js
+- Express
+- Plain HTML, CSS, and JavaScript
+
+## Getting started
+
+1. Install dependencies:
+
+   npm install
+
+2. Start the app:
+
+   npm start
+
+3. Open the app in your browser:
+
+   http://localhost:3000
+
+## Monetization notes
+
+The app includes a pricing section and a billing endpoint that is ready for Stripe integration. To activate live Stripe payments, add your credentials in a `.env` file and swap the demo checkout response with actual Stripe Checkout session creation.
+
+Example:
+
+```bash
+PORT=3000
+STRIPE_SECRET_KEY=your_secret_key
+STRIPE_PUBLISHABLE_KEY=your_publishable_key
+```
+
+## Project structure
+
+- `server.js` — main Express application
+- `public/index.html` — landing page and dashboard UI
+- `public/styles.css` — app styling
+- `public/app.js` — frontend logic and dashboard rendering
+- `data/store.json` — seeded financial data
+
+## Notes
+
+This is a fully operational demo app designed to run locally and serve as a strong foundation for a production freelancer finance product.
+
+## Production next steps
+
+- Connect bank account APIs
+- Add user authentication
+- Integrate Stripe Checkout or Stripe Billing
+- Add transaction import and tax report generation
+- Deploy to Vercel, Render, or Railway
+
